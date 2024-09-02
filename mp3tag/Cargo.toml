@@ -1,0 +1,14 @@
+[package]
+name = "mp3tag"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+humanize-bytes = "1.0.6"
+humantime = "2.1.0"
+id3 = "1.14.0"
+symphonia = { version = "0.5.4", features = ["all"] }
+
+[[bin]]
+name = "mp3tag"
+path = "src/main.rs"

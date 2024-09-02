@@ -1,0 +1,61 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+
+permissions:
+  packages: write
+
+jobs:
+  build-airtime:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Log in to GitHub Container Registry
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      working-directory: airtime/airtime
+
+    - name: Build Docker image
+      run: docker build -t ghcr.io/${{ github.repository_owner }}/airtime:latest airtime/airtime
+      working-directory: airtime/airtime
+
+    - name: Push Docker image
+      run: docker push ghcr.io/${{ github.repository_owner }}/airtime:latest
+      working-directory: airtime/airtime
+
+  build-mp3tag:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        target: [x86_64-unknown-linux-gnu, aarch64-apple-darwin]
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.target }}
+        override: true
+
+    - name: Build Rust project
+      run: cargo build --release --target ${{ matrix.target }}
+      working-directory: mp3tag
+
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: mp3tag-${{ matrix.target }}
+        path: mp3tag/target/${{ matrix.target }}/release/mp3tag
+        overwrite: true

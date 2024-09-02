@@ -1,0 +1,57 @@
+---
+
+services:
+  airtime:
+    build:
+      context: airtime
+    environment:
+      ADMIN_PASSWORD: admin
+      API_KEY: C66QKEUKNJG9A0KYU32I
+      ICECAST_ADMIN_PASSWORD: admin
+      ICECAST_ADMIN_USERNAME: admin
+      ICECAST_HOST: icecast
+      POSTGRES_DB: airtime
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: airtime
+      POSTGRES_USER: airtime
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PASS: airtime
+      RABBITMQ_USER: airtime
+      RABBITMQ_VHOST: /airtime
+    ports:
+    - 8080:80
+    restart: unless-stopped
+    volumes:
+    - airtime-data:/srv/airtime
+  icecast:
+    image: ghcr.io/libretime/icecast:2.4.4
+    environment:
+      ICECAST_ADMIN_PASSWORD: admin
+      ICECAST_ADMIN_USERNAME: admin
+    ports:
+    - 8000:8000
+    restart: unless-stopped
+  postgres:
+    image: docker.io/postgres:16.4
+    environment:
+      POSTGRES_DB: airtime
+      POSTGRES_HOST_AUTH_METHOD: password
+      POSTGRES_PASSWORD: airtime
+      POSTGRES_USER: airtime
+    restart: unless-stopped
+    volumes:
+    - postgres-data:/var/lib/postgresql/data
+  rabbitmq:
+    image: docker.io/rabbitmq:3.13.7
+    environment:
+      RABBITMQ_DEFAULT_PASS: airtime
+      RABBITMQ_DEFAULT_USER: airtime
+      RABBITMQ_DEFAULT_VHOST: /airtime
+    restart: unless-stopped
+    volumes:
+    - rabbitmq-data:/var/lib/rabbitmq
+
+volumes:
+  airtime-data:
+  postgres-data:
+  rabbitmq-data:
